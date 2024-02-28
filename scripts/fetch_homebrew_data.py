@@ -1,3 +1,4 @@
+#! python3
 import subprocess
 import json
 import re
@@ -8,41 +9,41 @@ def get_formulae_list():
         raise Exception(f"Error getting formulae list: {result.stderr}")
     return result.stdout.splitlines()
 
-# TODO(joesweeney): This should take in all the formulae.
-def get_formula_data(formula):
-    if not formula:
+def get_formulae_data(formulae):
+    if len(formulae) == 0:
         raise ValueError("Formula name is empty or invalid.")
-    formula_data = subprocess.run(['brew', 'info', '--json', '--variations', formula], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    formulae = [f for f in formulae if len(f) > 0]
+    command = ['brew', 'info', '--json', '--variations'] + formulae
+    formula_data = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if formula_data.stderr:
-        raise Exception(f"Error getting formula data for {formula}: {formula_data.stderr}")
+        raise Exception(f"Error getting formula data for forumlae: {formula_data.stderr}")
     return formula_data.stdout
 
 def extract_data(formula_content):
     data = json.loads(formula_content)
-    assert(len(data) == 1)
-    formula = data[0]
-    output = {'name': formula['full_name']}
-    # print(formula['bottle']['stable']['files'])
-    # TODO(joesweeney): Check it is in homebrew core.
-    if 'bottle' in formula and 'stable' in formula['bottle']:
-        if 'files' in formula['bottle']['stable']:
-            files = formula['bottle']['stable']['files']
-            output['bottles'] = files
+    output = []
+    for formula in data:
+        if formula['tap'] != 'homebrew/core':
+            next
+        entry = {'name': formula['full_name']}
+        if 'bottle' in formula and 'stable' in formula['bottle']:
+            if 'files' in formula['bottle']['stable']:
+                files = formula['bottle']['stable']['files']
+                entry['bottles'] = files
+                output.append(entry)
     return output
 
-# TODO(joesweeney): Speed!
 def main():
     formulae = get_formulae_list()
-    with open('homebrew_formulae.jsonl', 'w') as f:
-        for formula in formulae:
-            try:
-                print(f"Processing {formula}...")
-                content = get_formula_data(formula)
-                data = extract_data(content)
-                data['name'] = formula
-                f.write(json.dumps(data) + '\n')  # Write each formula's data as a new line in JSONL format
-            except Exception as e:
-                print(f"Error processing {formula}: {e}")
+    with open('homebrew_formulae.json', 'w') as f:
+        try:
+            print(f"Processing {len(formulae)} formulae...")
+            content = get_formulae_data(formulae)
+            data = extract_data(content)
+            f.write(json.dumps(data)) 
+            print(f"Succesfully got bottle data for {len(data)} formulae.")
+        except Exception as e:
+            print(f"Error processing formulae: {e}")
 
 if __name__ == "__main__":
     main()
