@@ -71,7 +71,16 @@ def filter_json():
             print(f"total formulae: {len(formulae)}")
             print(f"unsigned formulae: {len(filtered)}")
 
+def print_names_and_tags(filename):
+    with open(filename) as f:
+        formulae = json.load(f)
+        for formula in formulae:
+            name = formula["name"]
+            for tag in formula["bottles"].keys():
+                print(f"{name} {tag}")
+
 
 if __name__ == "__main__":
     # get_all_unverified_bottles()
-    filter_json()
+    # filter_json()
+    print_names_and_tags("unverified_formulae.json")
