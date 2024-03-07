@@ -82,6 +82,7 @@ module Homebrew
             end
             formula.fetch_bottle_tab
             fetch_formula(bottle, args: args)
+            # TODO: No backfills after a timestamp of the last backfill attestation.
             Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
           end
         end
