@@ -1,0 +1,54 @@
+name: Backfill Build Provenance Signatures
+on:
+  workflow_dispatch:
+    inputs:
+        number_of_bottles:
+            description: "Number of bottles to sign in this run."
+            type: number
+            required: false
+            default: 10000
+jobs:
+    fetch_bottles:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up Homebrew
+              id: set-up-homebrew
+              uses: Homebrew/actions/setup-homebrew@master
+
+            - name: Tap brew verify
+              id: tap-brew-verify
+              run: brew tap trailofbits/homebrew-brew-verify
+        
+            - name: Download state artifact
+              uses: actions/download-artifact@v2
+              with:
+                name: state
+                path: state
+              continue-on-error: true  # Continue if the state artifact does not exist
+
+            - name: Read starting line number
+              id: set_state
+              run: |
+                if [[ -f state/line_number.txt ]]; then
+                  echo "State file found, setting START_LINE."
+                  START_LINE=$(cat state/line_number.txt)
+                  echo "START_LINE=$START_LINE" >> $GITHUB_ENV
+                else
+                  echo "State file not found, starting from line 0."
+                  echo "START_LINE=" >> $GITHUB_ENV
+                fi
+      
+            - name: Process bottles
+              run: |
+                END_LINE=$((START_LINE + 10000))  
+                sed -n "${START_LINE},${END_LINE}p;${END_LINE}q" scripts/tags_to_sign.txt | while IFS=' ' read -r arg1 arg2; do
+                  echo "$arg1" "$arg2"
+                done
+                echo "New START_LINE=$(($END_LINE))" >> state/line_number.txt  # Update starting line for next run
+              working-directory: ${{ env.HOMEBREW_PREFIX }}/Library/Taps/trailofbits/homebrew-brew-verify/scripts
+      
+            - name: Upload new state artifact
+              uses: actions/upload-artifact@v2
+              with:
+                name: state
+                path: state/line_number.txt
