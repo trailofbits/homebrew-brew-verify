@@ -82,8 +82,7 @@ module Homebrew
             end
             formula.fetch_bottle_tab
             fetch_formula(bottle, args: args)
-            puts formula.cached_download
-            safe_system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
+            Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
           end
         end
       else
