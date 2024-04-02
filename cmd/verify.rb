@@ -5,6 +5,7 @@ require "formula"
 require "cli/parser"
 require "cmd/fetch"
 
+# The `Homebrew` namespace.
 module Homebrew
   extend Fetch
 
