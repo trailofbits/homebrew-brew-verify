@@ -1,11 +1,12 @@
-# Trailofbits Brew-verify
+# `brew verify`
 
-## How do I install these formulae?
+This is a command-only tap for the `brew verify` command, pending its
+integration into upstream `brew`.
 
-`brew install trailofbits/brew-verify/<formula>`
+## Usage
 
-Or `brew tap trailofbits/brew-verify` and then `brew install <formula>`.
+```
+brew tap trailofbits/brew-verify
+brew verify --help
+```
 
-## Documentation
-
-`brew help`, `man brew` or check [Homebrew's documentation](https://docs.brew.sh).
