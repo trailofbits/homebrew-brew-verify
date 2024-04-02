@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require "formula"
@@ -67,11 +68,11 @@ module Homebrew
       when Formula
         formula = T.cast(formula_or_cask, Formula)
         os_arch_combinations.each do |os, arch|
-          SimulateSystem.with os: os, arch: arch do
+          SimulateSystem.with(os:, arch:) do
             bottle_tag = if (bottle_tag = args.bottle_tag&.to_sym)
               Utils::Bottles::Tag.from_symbol(bottle_tag)
             else
-              Utils::Bottles::Tag.new(system: os, arch: arch)
+              Utils::Bottles::Tag.new(system: os, arch:)
             end
 
             bottle = formula.bottle_for_tag(bottle_tag)
@@ -81,7 +82,7 @@ module Homebrew
               next
             end
             formula.fetch_bottle_tab
-            fetch_formula(bottle, args: args)
+            fetch_formula(bottle, args:)
             # TODO: No backfills after a timestamp of the last backfill attestation.
             Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
           end
