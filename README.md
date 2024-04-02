@@ -5,7 +5,7 @@ integration into upstream `brew`.
 
 ## Usage
 
-```
+```bash
 brew tap trailofbits/brew-verify
 brew verify --help
 ```
