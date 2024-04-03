@@ -68,8 +68,9 @@ module Homebrew
             opoo "Bottle for tag #{bottle_tag.to_sym.inspect} is unavailable."
             next
           end
-          formula.fetch_bottle_tab
-          fetch_formula(bottle, args:)
+
+          bottle.fetch
+
           # TODO: No backfills after a timestamp of the last backfill attestation.
           Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
         end
