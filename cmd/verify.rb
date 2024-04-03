@@ -35,7 +35,6 @@ module Homebrew
              description: "Also download dependencies for any listed <formula>."
       switch "-f", "--force",
              description: "Remove a previously cached version and re-fetch."
-      conflicts "--formula"
       conflicts "--os", "--bottle-tag"
       conflicts "--arch", "--bottle-tag"
       named_args [:formula], min: 1
