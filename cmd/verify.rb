@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 require "formula"
 require "cli/parser"
 require "cmd/fetch"
 
+# The `Homebrew` namespace.
 module Homebrew
   extend Fetch
 
@@ -21,8 +23,6 @@ module Homebrew
       EOS
       switch "--formula", "--formulae",
              description: "List only formulae, or treat all named arguments as formulae."
-      switch "--cask", "--casks",
-             description: "List only casks, or treat all named arguments as casks."
       flag   "--os=",
              description: "Download for the given operating system." \
                           "(Pass `all` to download for all operating systems.)"
@@ -35,7 +35,6 @@ module Homebrew
              description: "Also download dependencies for any listed <formula>."
       switch "-f", "--force",
              description: "Remove a previously cached version and re-fetch."
-      conflicts "--formula", "--cask"
       conflicts "--os", "--bottle-tag"
       conflicts "--arch", "--bottle-tag"
       named_args [:formula], min: 1
@@ -44,10 +43,6 @@ module Homebrew
 
   def self.verify
     args = verify_args.parse
-    if args.cask?
-      opoo "Can only verify bottles, not casks."
-      return
-    end
     bucket = if args.deps?
       args.named.to_formulae_and_casks.flat_map do |formula_or_cask|
         case formula_or_cask
@@ -67,11 +62,11 @@ module Homebrew
       when Formula
         formula = T.cast(formula_or_cask, Formula)
         os_arch_combinations.each do |os, arch|
-          SimulateSystem.with os: os, arch: arch do
+          SimulateSystem.with(os:, arch:) do
             bottle_tag = if (bottle_tag = args.bottle_tag&.to_sym)
               Utils::Bottles::Tag.from_symbol(bottle_tag)
             else
-              Utils::Bottles::Tag.new(system: os, arch: arch)
+              Utils::Bottles::Tag.new(system: os, arch:)
             end
 
             bottle = formula.bottle_for_tag(bottle_tag)
@@ -81,7 +76,7 @@ module Homebrew
               next
             end
             formula.fetch_bottle_tab
-            fetch_formula(bottle, args: args)
+            fetch_formula(bottle, args:)
             # TODO: No backfills after a timestamp of the last backfill attestation.
             Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
           end
