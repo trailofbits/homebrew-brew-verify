@@ -1,12 +1,9 @@
 # typed: true
 # frozen_string_literal: true
 
-require "English"
 require "abstract_command"
 require "formula"
 require "json"
-require "cli/parser"
-require "fetch"
 require "date"
 
 # The `Homebrew` namespace.
@@ -17,11 +14,11 @@ module Homebrew
     class VerifyCmd < AbstractCommand
       cmd_args do
         description <<~EOS
-            Verify the build provenance of bottles using GitHub's attestation tools.
-            This is done by first fetching the given bottles, and then verifying
-            their provenance.
+          Verify the build provenance of bottles using GitHub's attestation tools.
+          This is done by first fetching the given bottles, and then verifying
+          their provenance.
 
-            Note that this command depends on the GitHub CLI. Run `brew install gh`. 
+          Note that this command depends on the GitHub CLI. Run `brew install gh`.
         EOS
         switch "--formula", "--formulae",
                description: "List only formulae, or treat all named arguments as formulae."
