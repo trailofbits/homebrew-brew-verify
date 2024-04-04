@@ -1,0 +1,44 @@
+name: Backfill Build Provenance Signatures
+on:
+  workflow_dispatch:
+    inputs:
+        number_of_bottles:
+            description: "Number of bottles to sign in this run."
+            type: number
+            required: false
+            default: 10000
+jobs:
+    
+    fetch_bottles:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write # for `generate build provenance`
+            contents: write # for `generate build provenance`
+        steps:
+            - name: Set up Homebrew
+              id: set-up-homebrew
+              uses: Homebrew/actions/setup-homebrew@master
+
+            - name: Tap brew verify
+              id: tap-brew-verify
+              run: brew tap trailofbits/homebrew-brew-verify
+
+            - name: Download bottles
+              id: download-bottles
+              run: |
+                python3 scripts/download_bottles.py --num_lines ${{ inputs.number_of_bottles }} >> "$GITHUB_OUTPUT"
+                echo "new_line_number=$(cat scripts/line_number.txt)" >> "$GITHUB_OUTPUT"
+            
+            - name: generate build provenance
+              uses: github-early-access/generate-build-provenance@main
+              with:
+                subject-path: '${{steps.download-bottles.outputs.artifact_path}}'
+            
+            - uses: actions/checkout@v4
+            - run: |
+                echo '${{steps.download-bottles.outputs.new_line_number}}' > scripts/line_number.txt
+                git config user.name github-actions
+                git config user.email github-actions@github.com
+                git add scripts/line_number.txt
+                git commit -m "CI: Update current line number to sign."
+                git push
