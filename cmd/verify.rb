@@ -134,7 +134,7 @@ module Homebrew
           return { verified: false, error: JSON::ParserError, message: "Failed to parse JSON: #{e.message}" }
         end
         is_verified = json_output.length.positive?
-          # TODO(joesweeney): Don't return a Hash.
+        # TODO(joesweeney): Don't return a Hash.
         { verified: is_verified, data: json_output }
       end
     end
