@@ -21,10 +21,7 @@ module Homebrew
             This is done by first fetching the given bottles, and then verifying
             their provenance.
 
-            Note that this command depends on the GitHub CLI and the gh-attestation extension:
-            https://github.com/github-early-access/gh-attestation?tab=readme-ov-file#installation
-
-          Follow the instructions there to install.
+            Note that this command depends on the GitHub CLI. Run `brew install gh`. 
         EOS
         switch "--formula", "--formulae",
                description: "List only formulae, or treat all named arguments as formulae."
