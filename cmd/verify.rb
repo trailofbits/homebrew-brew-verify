@@ -115,8 +115,6 @@ module Homebrew
                   end
                 end
               end
-
-              # TODO: No backfills after a timestamp of the last backfill attestation.
             end
           end
         end
