@@ -6,7 +6,6 @@ require "json"
 module Homebrew
   module Attestation
     COMMAND_ERROR = :command_error
-    # TODO(joesweeney): Move to separate `lib/attestation.rb`.
     def self.check_attestation(bottle, signing_repo)
       cmd = "gh attestation verify #{bottle.cached_download} -R #{signing_repo} --format json 2>/dev/null"
       output = IO.popen(cmd, &:read)
