@@ -10,7 +10,7 @@ module Homebrew
     def self.check_attestation(bottle, signing_repo)
       cmd = ["gh", "attestation", "verify", bottle.cached_download, "-R", signing_repo, "--format", "json"]
       begin
-        output = Utils.safe_popen_read *cmd
+        output = Utils.safe_popen_read(*cmd)
       rescue ErrorDuringExecution => e
         # TODO(joesweeney): Don't return a Hash. Use a real type or exceptions.
         return { verified: false, error: COMMAND_ERROR, message: "Command failed with status #{e}" }
