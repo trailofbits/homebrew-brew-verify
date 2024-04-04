@@ -2,17 +2,18 @@
 # frozen_string_literal: true
 
 require "json"
+require "utils/popen"
 
 module Homebrew
   module Attestation
     COMMAND_ERROR = :command_error
     def self.check_attestation(bottle, signing_repo)
-      cmd = "gh attestation verify #{bottle.cached_download} -R #{signing_repo} --format json 2>/dev/null"
-      output = IO.popen(cmd, &:read)
-      exit_status = $CHILD_STATUS.exitstatus
-      if exit_status != 0
+      cmd = ["gh", "attestation", "verify", bottle.cached_download, "-R", signing_repo, "--format", "json"]
+      begin
+        output = Utils.safe_popen_read *cmd
+      rescue ErrorDuringExecution => e
         # TODO(joesweeney): Don't return a Hash. Use a real type or exceptions.
-        return { verified: false, error: COMMAND_ERROR, message: "Command failed with status #{exit_status}" }
+        return { verified: false, error: COMMAND_ERROR, message: "Command failed with status #{e}" }
       end
 
       begin

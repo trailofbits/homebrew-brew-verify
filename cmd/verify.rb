@@ -80,7 +80,7 @@ module Homebrew
                 when JSON::ParserError
                   opoo "#{bottle.name} with tag #{bottle_tag} returned invalid json: #{result[:message]}"
                   next
-                when COMMAND_ERROR
+                when Homebrew::Attestation::COMMAND_ERROR
                   opoo "#{bottle.name} with tag #{bottle_tag} unverified, checking backfill signature."
                   backup_result = check_attestation(bottle, "trailofbits/homebrew-brew-verify")
                   if backup_result[:verified]
