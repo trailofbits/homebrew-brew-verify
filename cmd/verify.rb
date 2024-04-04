@@ -43,47 +43,37 @@ module Homebrew
 
   def self.verify
     args = verify_args.parse
+
     bucket = if args.deps?
-      args.named.to_formulae_and_casks.flat_map do |formula_or_cask|
-        case formula_or_cask
-        when Formula
-          formula = formula_or_cask
-          [formula, *formula.recursive_dependencies.map(&:to_formula)]
-        else
-          formula_or_cask
-        end
+      args.named.to_formulae.flat_map do |formula|
+        [formula, *formula.recursive_dependencies.map(&:to_formula)]
       end
     else
-      args.named.to_formulae_and_casks
+      args.named.to_formulae
     end.uniq
+
     os_arch_combinations = args.os_arch_combinations
-    bucket.each do |formula_or_cask|
-      case formula_or_cask
-      when Formula
-        formula = T.cast(formula_or_cask, Formula)
-        os_arch_combinations.each do |os, arch|
-          SimulateSystem.with(os:, arch:) do
-            bottle_tag = if (bottle_tag = args.bottle_tag&.to_sym)
-              Utils::Bottles::Tag.from_symbol(bottle_tag)
-            else
-              Utils::Bottles::Tag.new(system: os, arch:)
-            end
-
-            bottle = formula.bottle_for_tag(bottle_tag)
-
-            if bottle.nil?
-              opoo "Bottle for tag #{bottle_tag.to_sym.inspect} is unavailable."
-              next
-            end
-            formula.fetch_bottle_tab
-            fetch_formula(bottle, args:)
-            # TODO: No backfills after a timestamp of the last backfill attestation.
-            Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
+    bucket.each do |formula|
+      os_arch_combinations.each do |os, arch|
+        SimulateSystem.with(os:, arch:) do
+          bottle_tag = if (bottle_tag = args.bottle_tag&.to_sym)
+            Utils::Bottles::Tag.from_symbol(bottle_tag)
+          else
+            Utils::Bottles::Tag.new(system: os, arch:)
           end
+
+          bottle = formula.bottle_for_tag(bottle_tag)
+
+          if bottle.nil?
+            opoo "Bottle for tag #{bottle_tag.to_sym.inspect} is unavailable."
+            next
+          end
+
+          bottle.fetch
+
+          # TODO: No backfills after a timestamp of the last backfill attestation.
+          Homebrew.system "gh", "attestation", "verify", bottle.cached_download, "-R", "Homebrew/homebrew-core"
         end
-      else
-        opoo "Can only verify bottles, not casks. #{formula_or_cask} is a cask."
-        next
       end
     end
   end
