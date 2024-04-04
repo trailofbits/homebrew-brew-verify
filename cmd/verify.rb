@@ -3,14 +3,13 @@
 
 require "abstract_command"
 require "formula"
-require "json"
 require "date"
+
+require_relative "../lib/attestation"
 
 # The `Homebrew` namespace.
 module Homebrew
   module Cmd
-    COMMAND_ERROR = :command_error
-
     class VerifyCmd < AbstractCommand
       cmd_args do
         description <<~EOS
@@ -69,7 +68,7 @@ module Homebrew
                 next
               end
               bottle.fetch
-              result = check_attestation(bottle, "Homebrew/homebrew-core")
+              result = Homebrew::Attestation.check_attestation(bottle, "Homebrew/homebrew-core")
               if result[:verified]
                 if args.json?
                   json_results.push(result[:data])
@@ -81,7 +80,7 @@ module Homebrew
                 when JSON::ParserError
                   opoo "#{bottle.name} with tag #{bottle_tag} returned invalid json: #{result[:message]}"
                   next
-                when COMMAND_ERROR
+                when Homebrew::Attestation::COMMAND_ERROR
                   opoo "#{bottle.name} with tag #{bottle_tag} unverified, checking backfill signature."
                   backup_result = check_attestation(bottle, "trailofbits/homebrew-brew-verify")
                   if backup_result[:verified]
@@ -112,30 +111,8 @@ module Homebrew
             end
           end
         end
-        return unless args.json?
 
-        puts json_results.to_json
-      end
-
-      # TODO(joesweeney): Move to separate `lib/attestation.rb`.
-      def check_attestation(bottle, signing_repo)
-        cmd = "gh attestation verify #{bottle.cached_download} -R #{signing_repo} --format json 2>/dev/null"
-        output = IO.popen(cmd, &:read)
-        exit_status = $CHILD_STATUS.exitstatus
-        if exit_status != 0
-          # TODO(joesweeney): Don't return a Hash. Use a real type or exceptions.
-          return { verified: false, error: COMMAND_ERROR, message: "Command failed with status #{exit_status}" }
-        end
-
-        begin
-          json_output = JSON.parse(output)
-        rescue JSON::ParserError => e
-          # TODO(joesweeney): Don't return a Hash.
-          return { verified: false, error: JSON::ParserError, message: "Failed to parse JSON: #{e.message}" }
-        end
-        is_verified = json_output.length.positive?
-        # TODO(joesweeney): Don't return a Hash.
-        { verified: is_verified, data: json_output }
+        puts json_results.to_json if args.json?
       end
     end
   end
