@@ -17,14 +17,14 @@ module Homebrew
       end
 
       begin
-        json_output = JSON.parse(output)
+        json = JSON.parse(output)
       rescue JSON::ParserError => e
         # TODO(joesweeney): Don't return a Hash.
         return { verified: false, error: JSON::ParserError, message: "Failed to parse JSON: #{e.message}" }
       end
-      is_verified = json_output.length.positive?
+
       # TODO(joesweeney): Don't return a Hash.
-      { verified: is_verified, data: json_output }
+      { verified: !json.empty?, data: json }
     end
   end
 end
