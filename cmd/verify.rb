@@ -82,7 +82,7 @@ module Homebrew
                   next
                 when Homebrew::Attestation::COMMAND_ERROR
                   opoo "#{bottle.name} with tag #{bottle_tag} unverified, checking backfill signature."
-                  backup_result = check_attestation(bottle, "trailofbits/homebrew-brew-verify")
+                  backup_result = Homebrew::Attestation.check_attestation(bottle, "trailofbits/homebrew-brew-verify")
                   if backup_result[:verified]
                     timestamp = backup_result.dig(:data, 0, "verificationResult", "verifiedTimestamps", 0,
                                                   "timestamp")
