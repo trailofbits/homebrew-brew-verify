@@ -71,7 +71,7 @@ module Homebrew
                 attestation = Homebrew::Attestation.check_core_attestation bottle
                 json_results.push(attestation)
               rescue Homebrew::Attestation::InvalidAttestationError => e
-                odie "Unable to verify #{bottle.name} with tag #{bottle_tag} due to error:\n#{e}"
+                opoo "Unable to verify #{bottle.name} with tag #{bottle_tag} due to error:\n#{e}"
               end
             end
           end
