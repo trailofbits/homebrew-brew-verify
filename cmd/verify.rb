@@ -18,8 +18,6 @@ module Homebrew
 
           Note that this command depends on the GitHub CLI. Run `brew install gh`.
         EOS
-        switch "--formula", "--formulae",
-               description: "List only formulae, or treat all named arguments as formulae."
         flag   "--os=",
                description: "Download for the given operating system." \
                             "(Pass `all` to download for all operating systems.)"
@@ -66,12 +64,18 @@ module Homebrew
                 opoo "Bottle for tag #{bottle_tag.to_sym.inspect} is unavailable."
                 next
               end
+              bottle.clear_cache if args.force?
               bottle.fetch
               begin
                 attestation = Homebrew::Attestation.check_core_attestation bottle
+                oh1 "#{bottle.filename} has a valid attestation"
                 json_results.push(attestation)
               rescue Homebrew::Attestation::InvalidAttestationError => e
-                opoo "Unable to verify #{bottle.name} with tag #{bottle_tag} due to error:\n#{e}"
+                odie <<~ERR
+                  Failed to verify #{bottle.filename} with tag #{bottle_tag} due to error:
+
+                  #{e}
+                ERR
               end
             end
           end
