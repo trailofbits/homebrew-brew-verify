@@ -71,7 +71,7 @@ module Homebrew
                 oh1 "#{bottle.filename} has a valid attestation"
                 json_results.push(attestation)
               rescue Homebrew::Attestation::InvalidAttestationError => e
-                odie <<~ERR
+                ofail <<~ERR
                   Failed to verify #{bottle.filename} with tag #{bottle_tag} due to error:
 
                   #{e}
