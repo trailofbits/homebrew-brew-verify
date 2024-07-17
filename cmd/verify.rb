@@ -70,6 +70,16 @@ module Homebrew
                 attestation = Homebrew::Attestation.check_core_attestation bottle
                 oh1 "#{bottle.filename} has a valid attestation"
                 json_results.push(attestation)
+              rescue Homebrew::Attestation::GhAuthNeeded
+                odie <<~EOS
+                  #{bottle.filename} could not be verified.
+
+                  This typically indicates a missing GitHub API token, which you
+                  can resolve either by setting `HOMEBREW_GITHUB_API_TOKEN` or
+                  by running:
+
+                    gh auth login
+                EOS
               rescue Homebrew::Attestation::InvalidAttestationError => e
                 ofail <<~ERR
                   Failed to verify #{bottle.filename} with tag #{bottle_tag} due to error:
